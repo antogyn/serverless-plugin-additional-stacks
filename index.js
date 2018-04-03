@@ -312,7 +312,9 @@ class AdditionalStacksPlugin {
       TemplateBody: JSON.stringify(compiledCloudFormationTemplate),
       Tags: Object.keys(stackTags).map((key) => ({ Key: key, Value: stackTags[key] })),
     }
-
+    if (this.serverless.service.provider.cfnRole) {
+      params.RoleARN = this.serverless.service.provider.cfnRole;
+    }
     this.serverless.cli.log('Creating additional stack ' + stackName + '...')
     return this.provider.request(
       'CloudFormation',
@@ -338,7 +340,9 @@ class AdditionalStacksPlugin {
       TemplateBody: JSON.stringify(compiledCloudFormationTemplate),
       Tags: Object.keys(stackTags).map((key) => ({ Key: key, Value: stackTags[key] })),
     }
-
+    if (this.serverless.service.provider.cfnRole) {
+      params.RoleARN = this.serverless.service.provider.cfnRole;
+    }
     return this.provider.request(
       'CloudFormation',
       'updateStack',
@@ -365,12 +369,17 @@ class AdditionalStacksPlugin {
   deleteStack(stackName, stack) {
     // Generate full stack name
     const fullStackName = this.getFullStackName(stackName, stack)
+    const params = {
+      StackName: fullStackName,
+    }
+    if (this.serverless.service.provider.cfnRole) {
+      params.RoleARN = this.serverless.service.provider.cfnRole;
+    }
     this.serverless.cli.log('Removing additional stack ' + stackName + '...')
     return this.provider.request(
       'CloudFormation',
-      'deleteStack', {
-        StackName: fullStackName,
-      },
+      'deleteStack',
+      params,
       this.options.stage,
       this.options.region
     )
